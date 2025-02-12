@@ -18,6 +18,7 @@ func NewAuthService(repo adapter.UserRepositiry) *AuthService {
 	return &AuthService{repo}
 }
 
+// Логика регистрации пользователя
 func (s *AuthService) Register(username, password string) error {
 	existUser, _ := s.UserRepo.GetUserByUsername(username)
 	if existUser != nil {
@@ -37,6 +38,7 @@ func (s *AuthService) Register(username, password string) error {
 	return s.UserRepo.CreateUser(&user)
 }
 
+// Логика авторизации пользователя
 func (s *AuthService) Login(username, password string) (string, error) {
 	user, err := s.UserRepo.GetUserByUsername(username)
 	if err != nil {
