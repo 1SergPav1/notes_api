@@ -2,7 +2,7 @@ package adapter
 
 import "github.com/1SergPav1/notes_api/internal/entity"
 
-type UserRepositiry interface {
+type UserRepository interface {
 	CreateUser(user *entity.User) error
 	GetUserByUsername(username string) (*entity.User, error)
 }

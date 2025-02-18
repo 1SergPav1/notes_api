@@ -10,7 +10,7 @@ type UserRepo struct {
 	DB *gorm.DB
 }
 
-func NewUserRepo(db *gorm.DB) adapter.UserRepositiry {
+func NewUserRepo(db *gorm.DB) adapter.UserRepository {
 	return &UserRepo{db}
 }
 

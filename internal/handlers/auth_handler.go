@@ -24,7 +24,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неккоректные данные"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные"})
 		return
 	}
 
@@ -44,7 +44,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неккоректные данные"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректные данные"})
 		return
 	}
 
