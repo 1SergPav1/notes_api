@@ -51,7 +51,7 @@ func (s *AuthService) Login(username, password string) (string, error) {
 		return "", errors.New("неверный пароль")
 	}
 
-	token, err := utils.GenerateJWT(user.Username)
+	token, err := utils.GenerateJWT(int64(user.ID))
 	if err != nil {
 		return "", err
 	}
