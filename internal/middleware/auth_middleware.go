@@ -24,9 +24,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := utils.ParseJWT(parts[0])
+		claims, err := utils.ParseJWT(parts[1])
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "невалидный токен"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "невалидный токен " + err.Error()})
 			c.Abort()
 			return
 		}

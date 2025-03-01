@@ -3,7 +3,6 @@ package service
 
 import (
 	"errors"
-	"log"
 
 	"github.com/1SergPav1/notes_api/internal/adapter"
 	"github.com/1SergPav1/notes_api/internal/entity"
@@ -22,7 +21,6 @@ func NewAuthService(repo adapter.UserRepository) *AuthService {
 // Логика регистрации пользователя
 func (s *AuthService) Register(username, password string) error {
 	existUser, _ := s.UserRepo.GetUserByUsername(username)
-	log.Println(existUser)
 	if existUser.ID != 0 {
 		return errors.New("Пользователь с таким именем уже существует")
 	}

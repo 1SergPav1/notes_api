@@ -38,14 +38,12 @@ func GenerateJWT(user_id int64) (string, error) {
 	claims := Claims{
 		UserID: user_id,
 		RegisteredClaims: jwt.RegisteredClaims{
-			// ExpiresAt: time.Now().Add(time.Hour * 12).Unix(),
-			// IssuedAt: time.Now().Unix(),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 12)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
-	key, err := ReadToken("jwt_token.txt")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	key, err := ReadToken("/home/pav/REP/notes_api/jwt_token.txt")
 	if err != nil {
 		return "", errors.New("не удалось считать ключ для создания jwt-токена")
 	}
@@ -53,13 +51,13 @@ func GenerateJWT(user_id int64) (string, error) {
 }
 
 func ParseJWT(tokenString string) (*Claims, error) {
-	secretKey, err := ReadToken("jwt_token.txt") //  Лучше это сделать в main?
+	secretKey, err := ReadToken("/home/pav/REP/notes_api/jwt_token.txt") //  Лучше это сделать в main?
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
-		return secretKey, nil
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (any, error) {
+		return []byte(secretKey), nil
 	})
 	if err != nil {
 		return nil, err
