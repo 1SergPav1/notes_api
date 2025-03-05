@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -18,7 +20,10 @@ type Claims struct {
 }
 
 func ReadToken(filename string) (string, error) {
-	file, err := os.Open(filename)
+	_, dir, _, _ := runtime.Caller(1)
+	keyPath := filepath.Join(filepath.Dir(dir), "../..", filename)
+
+	file, err := os.Open(keyPath)
 	if err != nil {
 		return "", fmt.Errorf("ошибка открытия файла с токеном: %w", err)
 	}
@@ -43,7 +48,7 @@ func GenerateJWT(user_id int64) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	key, err := ReadToken("/home/pav/REP/notes_api/jwt_token.txt")
+	key, err := ReadToken("./jwt_token.txt")
 	if err != nil {
 		return "", errors.New("не удалось считать ключ для создания jwt-токена")
 	}
@@ -51,7 +56,7 @@ func GenerateJWT(user_id int64) (string, error) {
 }
 
 func ParseJWT(tokenString string) (*Claims, error) {
-	secretKey, err := ReadToken("/home/pav/REP/notes_api/jwt_token.txt") //  Лучше это сделать в main?
+	secretKey, err := ReadToken("./jwt_token.txt")
 	if err != nil {
 		return nil, err
 	}
