@@ -90,6 +90,26 @@ func TestGetNotes(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "new test note")
 }
 
+func TestDeleteNoteForeign(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	noteService := service.NewNoteService(mockRepoNote)
+	noteHandler := NewNoteHandler(noteService)
+
+	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
+	router.DELETE("/notes/:id", noteHandler.DeleteNote)
+
+	req, _ := http.NewRequest("DELETE", "/notes/1?user_id=2", nil)
+	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3NDEyMDc5OTUsImlhdCI6MTc0MTE2NDc5NX0.IlJ3u-Y-OyXcnA3f1U35dRTivmEbrBhIuCt0llFURM8")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusForbidden, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Заметка не найдена")
+}
+
 func DeleteNote(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
