@@ -1,0 +1,28 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Клонируем репозиторий
+        uses: actions/checkout@v4
+
+      - name: Устанавливаем Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+      - name: Загружаем зависимости
+        run: go mod tidy
+
+      - name: Запускаем тесты
+        run: go test ./internal/... -cover -race
