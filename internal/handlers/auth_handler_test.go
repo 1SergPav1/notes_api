@@ -13,12 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var mockRepo = mocks.NewMockUserRepository()
+var mockRepoUser = mocks.NewMockUserRepository()
 
 func TestRegister(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	authService := service.NewAuthService(mockRepo)
+	authService := service.NewAuthService(mockRepoUser)
 	authHandler := NewAuthHandler(authService)
 
 	router := gin.Default()
@@ -42,7 +42,7 @@ func TestRegister(t *testing.T) {
 func TestLogin(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	authService := service.NewAuthService(mockRepo)
+	authService := service.NewAuthService(mockRepoUser)
 	authHandler := NewAuthHandler(authService)
 
 	router := gin.Default()
@@ -61,4 +61,28 @@ func TestLogin(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "token")
+}
+
+func TestLiginInvalidPassword(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	authService := service.NewAuthService(mockRepoUser)
+	authHandler := NewAuthHandler(authService)
+
+	router := gin.Default()
+	router.POST("/auth/login", authHandler.Login)
+
+	reqBody, _ := json.Marshal(map[string]string{
+		"username": "testuser",
+		"password": "wrongpassword",
+	})
+
+	req, _ := http.NewRequest("POST", "/auth/login", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-type", "application/json")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "неверный пароль")
 }

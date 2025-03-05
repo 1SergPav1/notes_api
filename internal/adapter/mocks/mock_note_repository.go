@@ -33,6 +33,13 @@ func (m *MockNoteRepository) GetNotesByUser(UserID uint) ([]entity.Note, error) 
 }
 
 func (m *MockNoteRepository) UpdateNote(note *entity.Note) error {
+	n, exists := m.Notes[note.ID]
+	if !exists {
+		return errors.New("Заметка не найдена")
+	}
+	n.Title = note.Title
+	n.Body = note.Body
+	m.Notes[note.ID] = n
 	return nil
 }
 

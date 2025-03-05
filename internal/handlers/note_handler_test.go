@@ -13,17 +13,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var mockRepoNote = mocks.NewMockNoteRepository()
+
 func TestCreateNote(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	mockRepo := mocks.NewMockNoteRepository()
-	noteService := service.NewNoteService(mockRepo)
+	noteService := service.NewNoteService(mockRepoNote)
 	noteHandler := NewNoteHandler(noteService)
 
 	router := gin.Default()
 	router.POST("/notes/", noteHandler.CreateNote)
 
-	reqBody, _ := json.Marshal(map[string]interface{}{
+	reqBody, _ := json.Marshal(map[string]any{
 		"title":   "test note",
 		"body":    "testing test of tests",
 		"user_id": 1,
@@ -38,4 +39,68 @@ func TestCreateNote(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Заметка создана")
+}
+
+func TestUpdateNote(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	noteService := service.NewNoteService(mockRepoNote)
+	noteHandler := NewNoteHandler(noteService)
+
+	router := gin.Default()
+	router.PUT("/notes/:id", noteHandler.UpdateNote)
+
+	reqBody, _ := json.Marshal(map[string]any{
+		"user_id": 1,
+		"title":   "new test note",
+		"body":    "new testing test of tests",
+	})
+
+	req, _ := http.NewRequest("PUT", "/notes/1?user_id=1", bytes.NewBuffer(reqBody))
+	req.Header.Set("Authorization", "Bearer valid_token")
+	req.Header.Set("Content-type", "application/json")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Заметка обновлена")
+}
+
+func TestGetNotes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	noteService := service.NewNoteService(mockRepoNote)
+	noteHandler := NewNoteHandler(noteService)
+
+	router := gin.Default()
+	router.GET("/notes/", noteHandler.GetNotes)
+
+	req, _ := http.NewRequest("GET", "/notes/?user_id=1", nil)
+	req.Header.Set("Authorization", "Bearer valid_token")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "new test note")
+}
+
+func DeleteNote(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	noteService := service.NewNoteService(mockRepoNote)
+	noteHandler := NewNoteHandler(noteService)
+
+	router := gin.Default()
+	router.DELETE("/notes/:id", noteHandler.DeleteNote)
+
+	req, _ := http.NewRequest("DELETE", "/note/1?user_id=1", nil)
+	req.Header.Set("Authorization", "Bearer valid_token")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Заметка удалена")
 }

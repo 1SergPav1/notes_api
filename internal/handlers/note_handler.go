@@ -57,7 +57,7 @@ func (h *NoteHandler) GetNotes(c *gin.Context) {
 
 // Обновление заметки
 func (h *NoteHandler) UpdateNote(c *gin.Context) {
-	noteID, err := strconv.ParseUint(c.Query("note_id"), 10, 32)
+	noteID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID заметки"})
 		return
