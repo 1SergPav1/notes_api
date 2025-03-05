@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/1SergPav1/notes_api/internal/adapter/mocks"
+	"github.com/1SergPav1/notes_api/internal/middleware"
 	"github.com/1SergPav1/notes_api/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,7 @@ func TestCreateNote(t *testing.T) {
 	noteHandler := NewNoteHandler(noteService)
 
 	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
 	router.POST("/notes/", noteHandler.CreateNote)
 
 	reqBody, _ := json.Marshal(map[string]any{
@@ -32,7 +34,7 @@ func TestCreateNote(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/notes/", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-type", "application/json")
-	req.Header.Set("Authorization", "Bearer valid_token")
+	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3NDEyMDc5OTUsImlhdCI6MTc0MTE2NDc5NX0.IlJ3u-Y-OyXcnA3f1U35dRTivmEbrBhIuCt0llFURM8")
 
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, req)
@@ -48,6 +50,7 @@ func TestUpdateNote(t *testing.T) {
 	noteHandler := NewNoteHandler(noteService)
 
 	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
 	router.PUT("/notes/:id", noteHandler.UpdateNote)
 
 	reqBody, _ := json.Marshal(map[string]any{
@@ -57,7 +60,7 @@ func TestUpdateNote(t *testing.T) {
 	})
 
 	req, _ := http.NewRequest("PUT", "/notes/1?user_id=1", bytes.NewBuffer(reqBody))
-	req.Header.Set("Authorization", "Bearer valid_token")
+	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3NDEyMDc5OTUsImlhdCI6MTc0MTE2NDc5NX0.IlJ3u-Y-OyXcnA3f1U35dRTivmEbrBhIuCt0llFURM8")
 	req.Header.Set("Content-type", "application/json")
 
 	recorder := httptest.NewRecorder()
@@ -74,10 +77,11 @@ func TestGetNotes(t *testing.T) {
 	noteHandler := NewNoteHandler(noteService)
 
 	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
 	router.GET("/notes/", noteHandler.GetNotes)
 
 	req, _ := http.NewRequest("GET", "/notes/?user_id=1", nil)
-	req.Header.Set("Authorization", "Bearer valid_token")
+	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3NDEyMDc5OTUsImlhdCI6MTc0MTE2NDc5NX0.IlJ3u-Y-OyXcnA3f1U35dRTivmEbrBhIuCt0llFURM8")
 
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, req)
@@ -93,14 +97,41 @@ func DeleteNote(t *testing.T) {
 	noteHandler := NewNoteHandler(noteService)
 
 	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
 	router.DELETE("/notes/:id", noteHandler.DeleteNote)
 
 	req, _ := http.NewRequest("DELETE", "/note/1?user_id=1", nil)
-	req.Header.Set("Authorization", "Bearer valid_token")
+	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3NDEyMDc5OTUsImlhdCI6MTc0MTE2NDc5NX0.IlJ3u-Y-OyXcnA3f1U35dRTivmEbrBhIuCt0llFURM8")
 
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Заметка удалена")
+}
+
+func TestCreateNoteWithoutToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	noteService := service.NewNoteService(mockRepoNote)
+	noteHandler := NewNoteHandler(noteService)
+
+	router := gin.Default()
+	router.Use(middleware.AuthMiddleware())
+	router.POST("/notes/", noteHandler.CreateNote)
+
+	reqBody, _ := json.Marshal(map[string]any{
+		"title":   "test note",
+		"body":    "testing test of tests",
+		"user_id": 1,
+	})
+
+	req, _ := http.NewRequest("POST", "/notes/", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-type", "application/json")
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "токен не найден")
 }
